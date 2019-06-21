@@ -1,0 +1,115 @@
+import java.util.*;
+import java.io.*;
+import java.nio.file.Files;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
+
+package StockSimulation;
+
+class Product extends Thread implements Comparable <Product>
+{
+    private String name;
+    private int balance = 0;
+    
+    public String getProduct()
+    {
+        return name;
+    }
+    
+    Product(String n)
+    {
+        name=n;
+    } 
+    public void addToStock ()
+    {
+        
+    }
+ 
+    public void removeFromStock ()
+    {
+                
+    }
+    @Override
+    public int compareTo(Product p) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+}
+
+
+class VenderThread extends Thread implements Comparable <VenderThread>
+{
+    VenderThread(String name) {super(name);}
+    @Override
+    public int compareTo(VenderThread v) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+}
+
+public class StockSimulation 
+{
+   
+    public static void main(String[] args) 
+    throws FileNotFoundException {
+        Thread VT = Thread.currentThread();
+        //VenderThread VT = new Thread();
+        Product[] product = new Product[4];
+        boolean correct_file = true;
+        do
+        {
+            try
+            {
+           
+            Scanner scan = new Scanner(System.in);
+            
+            System.out.printf("%s > Enter product file = ",Thread.currentThread().getName());
+            Scanner input = new Scanner(System.in);            
+            File file = new File(input.nextLine());
+            input = new Scanner(file);
+            
+            ArrayList<Product> ProductList = new ArrayList<Product>();
+            
+            while (input.hasNextLine())
+            {
+                String line = input.nextLine();
+                String[] buffer = line.split("\n");
+                String product_name = buffer[0];
+                Product x = new Product(product_name);
+                ProductList.add(x);
+            }
+            for(int i = 0; i< ProductList.size();i++)
+                System.out.println(ProductList.get(i).getProduct());
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            System.out.printf("\n%s > enter transaction file for vendor 1 = ",Thread.currentThread().getName());
+            Scanner inputv1 = new Scanner(System.in);
+            File filev1 = new File(input.nextLine());
+            input = new Scanner(file);
+            while (input.hasNextLine())
+            {
+                String line = input.nextLine();
+                String[] buffer = line.split(",");
+                String product_name = buffer[0];
+                Product p = new Product(product_name);
+                ProductList.add(p);
+            }
+           ///////////////////////////////////////////////////////////////////////////////////////////////////////
+            System.out.printf("\n%s > enter transaction file for vendor 2 = ",Thread.currentThread().getName());
+            Scanner inputv2 = new Scanner(System.in);
+            File filev2 = new File(input.nextLine());
+            input = new Scanner(file);
+           /////////////////////////////////////////////////////////////////////////////////////////////////////// 
+            System.out.printf("\n%s > enter transaction file for vendor 3 = ",Thread.currentThread().getName());
+            Scanner inputv3 = new Scanner(System.in);
+            File filev3 = new File(input.nextLine());
+            input = new Scanner(file);*/
+            
+               correct_file = false;
+            }
+            //////////////////////////////////////////////////////////////////////////////////////////////////////
+            catch (Exception e) {
+            System.err.println(e);
+        }
+    } while (correct_file);
+}
+}
