@@ -1,0 +1,33 @@
+
+package stocksimulation;
+
+/*class Product extends Thread implements Comparable <Product>
+{
+    private String name;
+    private int balance = 0;
+    
+    public void addToStock ()
+    {
+        
+    }
+ 
+    public void removeFromStock (
+    {
+                
+    }
+}*/
+
+class VenderThread extends Thread implements Comparable <VenderThread>
+{
+    
+}
+
+public class StockSimulation 
+{
+
+    
+    public static void main(String[] args) {
+        // TODO code application logic here
+    }
+    
+}
