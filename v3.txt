@@ -1,0 +1,10 @@
+ 1, bluetooth speaker,	500
+ 2, clip lens,		500
+ 3, mini projector,    -300
+ 4, power bank,	        300
+ 5, bluetooth speaker, -300
+ 6, clip lens,	        100
+ 7, mini projector,    -200
+ 8, mini projector,    -400	
+ 9, power bank,         200
+10, power bank,		200
