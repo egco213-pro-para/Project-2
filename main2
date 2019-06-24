@@ -13,21 +13,42 @@ class Product extends Thread implements Comparable<Product> {
 
     private String name;
     private int balance = 0;
+    private int transNum;
+   // private int checkb = 0;
+    Product(String n, int b,int t) {
+        name = n;
+        balance = b;
+       // checkb = checkb+b;
+        transNum = t;
+    }
 
     public String getProduct() {
         return name;
     }
-
-    Product(String n) {
-        name = n;
+    public int getPrice()
+    {
+        return balance;
+    }
+    
+    
+    public void addToStock(int price) {
+    balance += price;
+            Product pr = (Product) Thread.currentThread();
+            System.out.println("T" + pr.getName() + "  " + "transaction " + pr.transNum + "  " + "+ " + price + " balance " + "=  " + balance);
     }
 
-    public void addToStock() {
+    public void removeFromStock(int price) {
+            Product pr = (Product) Thread.currentThread();
 
-    }
+            if (balance >= price) {
+                balance -= price;
+                System.out.println("T" + pr.getName() + "  " + "transaction " + pr.transNum + "  " + "- " + price + " balance " + "=  " + balance);
 
-    public void removeFromStock() {
-
+            } else {
+                balance = 0;
+                System.out.println("T" + pr.getName() + "  " + "transaction " + pr.transNum + "  " + "- " + price + " balance " + "=  " + balance);
+            }
+                
     }
 
     @Override
@@ -48,6 +69,12 @@ class VenderThread extends Thread implements Comparable<VenderThread> {
     }
 }
 
+class v1 extends Thread 
+{
+    
+}
+        
+        
 public class StockSimulation {
 
     public static void main(String[] args)
@@ -55,6 +82,11 @@ public class StockSimulation {
         Thread VT = Thread.currentThread();
         //VenderThread VT = new Thread();
         Product[] product = new Product[4];
+         ArrayList<Product> Bluetooth = new ArrayList<Product>();
+         ArrayList<Product> clipl = new ArrayList<Product>();
+         ArrayList<Product> minip = new ArrayList<Product>();
+         ArrayList<Product> powerb = new ArrayList<Product>();
+         
         boolean correct_file = true;
        while (correct_file){
             try {
@@ -65,16 +97,16 @@ public class StockSimulation {
                 File file = new File(input.nextLine());
                 input = new Scanner(file);
 
-                ArrayList<Product> ProductList = new ArrayList<Product>();
+               
 
                 while (input.hasNextLine()) {
                     String line = input.nextLine();
                     String[] buffer = line.split("\n");
                     String product_name = buffer[0];
-                    Product x = new Product(product_name);
-                    ProductList.add(x);
+                    VenderThread v = new VenderThread(product_name);
+                    //ProductList.add(v);
                 }
-
+                
                 for (int i = 0; i < ProductList.size(); i++) {
                     System.out.println(ProductList.get(i).getProduct());
                 } correct_file = false;
@@ -94,9 +126,15 @@ public class StockSimulation {
                 while (inputv1.hasNextLine()) {
                     String line = inputv1.nextLine();
                     String[] buffer = line.split(",");
-                    String product_name = buffer[0];
-                    Product p = new Product(product_name);
-                    //ProductList.add(p);
+                    String name_p1 = buffer[1];
+                    int trans1 = Integer.parseInt(buffer[0].trim());
+                    int price1 = Integer.parseInt(buffer[2].trim());
+                    Product p1 = new Product(name_p1,price1,trans1);
+                    ProductList.add(p1);
+                }
+                 for (int i = 0; i < ProductList.size(); i++) {
+                    System.out.println(ProductList.get(i).getProduct());
+                    System.out.println(ProductList.get(i).getPrice());
                 }correct_file = false;
             } catch (Exception e) {
                 System.err.println(e);  
@@ -109,11 +147,14 @@ public class StockSimulation {
                 Scanner inputv2 = new Scanner(System.in);
                 File filev2 = new File(inputv2.nextLine());
                 inputv2 = new Scanner(filev2);
-                while (inputv2.hasNextLine()) {
+                while (inputv2.hasNextLine()) 
+                {
                     String line = inputv2.nextLine();
                     String[] buffer = line.split(",");
-                    String product_name = buffer[0];
-                }correct_file = false;
+                    String name_v2 = buffer[1];
+                    VenderThread v2 = new VenderThread(name_v2);
+                }
+                correct_file = false;
             } catch (Exception e) {
                 System.err.println(e);
             }
@@ -125,6 +166,13 @@ public class StockSimulation {
                 Scanner inputv3 = new Scanner(System.in);
                 File filev3 = new File(inputv3.nextLine());
                 inputv3 = new Scanner(filev3);
+                while (inputv3.hasNextLine()) 
+                {
+                    String line = inputv3.nextLine();
+                    String[] buffer = line.split(",");
+                    String name_v3 = buffer[1];
+                    VenderThread v3 = new VenderThread(name_v3);
+                }
                 correct_file = false;
             } catch (Exception e) {
                 System.err.println(e);
