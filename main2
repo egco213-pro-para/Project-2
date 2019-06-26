@@ -160,7 +160,8 @@ public class StockSimulation {
                 Scanner inputv1 = new Scanner(System.in);
                 File filev1 = new File(inputv1.nextLine());
                 inputv1 = new Scanner(filev1);
-                while (inputv1.hasNextLine()) {
+                while (inputv1.hasNextLine()) 
+                {
                     String line = inputv1.nextLine();
                     String[] buffer = line.split(",");
                     String name_p1 = buffer[1];
@@ -179,12 +180,13 @@ public class StockSimulation {
                     System.out.print("\t\t");
                     System.out.print(allItem.get(i).getPrice());
                     System.out.print("\n");
+                    correct_file = false;  
                       }
-                 correct_file = false;    
+                   
                  }
              catch (Exception e) {
                 System.err.println(e);  
-            }
+            }}
             correct_file = true;
             
             
