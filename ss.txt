@@ -1,0 +1,330 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package stocksimulation;
+
+import java.util.*;
+import java.io.*;
+import java.util.concurrent.*;
+
+class Product implements Comparable<Product> {
+
+    private String name;
+    private int balance = 0;
+    private int buy = 0, sales = 0;
+
+    //Constructors
+    Product(String n) {
+        name = n;
+    }
+
+    //Methods
+    public void addToStock(int a) {
+        balance = balance + a;
+        buy = buy + a;
+    }
+
+    public void removeFromStock(int s) {
+        if (balance > s * -1) {
+            balance = balance + s;
+            sales = sales - s;
+            return;
+        }
+
+        if (balance < s * -1) {
+            sales = sales + balance;
+            balance = 0;
+            return;
+        }
+    }
+
+    public String getName() {
+        String n = name;
+        return n;
+    }
+
+    public int getBalance() {
+        int b = balance;
+        return b;
+    }
+
+    public void Reset(int a) {
+        balance = a;
+        sales = a;
+        buy = a;
+    }
+
+    public void report() {
+        System.out.printf("%s > %-20s buy = %-10d sales = %-10d balancec = %d\n", Thread.currentThread().getName(), name, buy, sales, balance);
+    }
+
+    @Override
+    public int compareTo(Product other) {
+        if (this.balance > other.balance) {
+            return -1;
+        } else if (this.balance < other.balance) {
+            return 1;
+        }
+
+        if (this.name.compareToIgnoreCase(other.name) < 0) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+}//End of Class Product
+
+class VendorThread extends Thread {
+
+    private ArrayList<Product> allStock = new ArrayList();
+    private Scanner input, input2;
+    private String name;
+    protected CyclicBarrier cfinish;
+    protected CyclicBarrier cfinish2;
+
+    //Constructor
+    VendorThread(String n, ArrayList P, Scanner in, CyclicBarrier f, Scanner in2) {
+        super(n);
+        allStock = P;
+        input = in;
+        input2 = in2;
+        name = n;
+        cfinish = f;
+    }
+
+    @Override
+    public void run() {
+
+        //Start of buying
+        synchronized (allStock) {
+            while (input.hasNext()) {
+                try {
+                    String line = input.nextLine();
+                    String[] buffer = line.split(",");
+
+                    //Buying            
+                    if (Integer.parseInt(buffer[2].trim()) > 0) {
+                        int transaction = Integer.parseInt(buffer[0].trim());
+                        String name = buffer[1];
+                        int buy = Integer.parseInt(buffer[2].trim());
+                        for (int i = 0; i < 4; i++) {
+                            if (name.trim().equals(allStock.get(i).getName().trim())) {
+                                allStock.get(i).addToStock(buy);
+                                System.out.printf("%s > transaction %-5d +%d %-30s balance = %d\n", Thread.currentThread().getName(), transaction, buy, name, allStock.get(i).getBalance());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        }
+        try {
+            cfinish.await();
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        cfinish.reset();
+        //End of Buying
+
+        //Start of Selling
+        try {
+            Thread.sleep(MIN_PRIORITY);
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+
+        synchronized (allStock) {
+            while (input2.hasNext()) {
+                try {
+                    String line = input2.nextLine();
+                    String[] buffer = line.split(",");
+
+                    //Selling  
+                    if (Integer.parseInt(buffer[2].trim()) < 0) {
+                        int transaction = Integer.parseInt(buffer[0].trim());
+                        String name = buffer[1];
+                        int sell = Integer.parseInt(buffer[2].trim());
+                        for (int i = 0; i < 4; i++) {
+                            if (name.trim().equals(allStock.get(i).getName().trim())) {
+                                allStock.get(i).removeFromStock(sell);
+                                System.out.printf("%s > transaction %-5d %d %-30s balance = %d\n", Thread.currentThread().getName(), transaction, sell, name, allStock.get(i).getBalance());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        }
+        try {
+            cfinish.await();
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        //End of Selling
+    }
+}//End of class VendorThread
+
+/**
+ *
+ * @author Ephemeral
+ */
+public class StockSimulation {
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+
+        boolean loop = true, loop1 = true;
+        int round = 1;
+
+        boolean v1_file_lost = true;
+        boolean v2_file_lost = true;
+        boolean v3_file_lost = true;
+
+        ArrayList<Product> P = new ArrayList();
+        CyclicBarrier finish = new CyclicBarrier(4);
+
+        //Storing product name into a file.
+        while(loop1){
+        try {
+            Scanner pro = new Scanner(System.in);
+                System.out.printf("%s > Transaction file for product: ", Thread.currentThread().getName());
+                String p = pro.next();
+            Scanner input = new Scanner(new File(p));
+            loop1 = false;
+            while (input.hasNext()) {
+                String line = input.nextLine();
+
+                String name = line;
+                Product temp = new Product(name);
+                P.add(temp);
+            }
+        } catch (Exception E) {
+            System.out.printf("File not Found\n");
+        }
+        }
+        //Creating thread with appropriate file name.
+        Thread v1 = null, v2 = null, v3 = null;
+        String file_name_v1 = null;
+        String file_name_v2 = null;
+        String file_name_v3 = null;
+
+        while (v1_file_lost) {
+            try {
+                Scanner in_v1 = new Scanner(System.in);
+                System.out.printf("\n%s > Transaction file for v1: ", Thread.currentThread().getName());
+                file_name_v1 = in_v1.next();
+                Scanner input_v1 = new Scanner(new File(file_name_v1));
+                Scanner input_v1x = new Scanner(new File(file_name_v1));
+                v1 = new VendorThread("v1", P, input_v1, finish, input_v1x);
+                v1_file_lost = false;
+            } catch (Exception e) {
+                System.out.printf("File not Found");
+            }
+        }
+
+        while (v2_file_lost) {
+            try {
+                Scanner in_v2 = new Scanner(System.in);
+                System.out.printf("\n%s > Transaction file for v2: ", Thread.currentThread().getName());
+                file_name_v2 = in_v2.next();
+                Scanner input_v2 = new Scanner(new File(file_name_v2));
+                Scanner input_v2x = new Scanner(new File(file_name_v2));
+                v2 = new VendorThread("v2", P, input_v2, finish, input_v2x);
+                v2_file_lost = false;
+            } catch (Exception e) {
+                System.out.printf("File not Found");
+            }
+        }
+
+        while (v3_file_lost) {
+            try {
+                Scanner in_v3 = new Scanner(System.in);
+                System.out.printf("\n%s > Transaction file for v3: ", Thread.currentThread().getName());
+                file_name_v3 = in_v3.next();
+                Scanner input_v3 = new Scanner(new File(file_name_v3));
+                Scanner input_v3x = new Scanner(new File(file_name_v3));
+                v3 = new VendorThread("v3", P, input_v3, finish, input_v3x);
+                v3_file_lost = false;
+            } catch (Exception e) {
+                System.out.printf("File not Found");
+            }
+        }
+
+        //Thread Start
+        while (loop) {
+            System.out.printf("\n%s > ------------------------\n", Thread.currentThread().getName());
+            System.out.printf("%s > Stock Simulation Round %d\n", Thread.currentThread().getName(), round);
+            System.out.printf("%s > ------------------------\n\n", Thread.currentThread().getName());
+
+            //Calculating Buy
+            v1.start();
+            v2.start();
+            v3.start();
+
+            try {
+                finish.await();
+            } catch (Exception e) {
+                System.err.println(e);
+            }
+            Collections.sort(P);
+            System.out.printf("\n");
+            for (int i = 0; i < 4; i++) {
+                P.get(i).report();
+            }
+            System.out.printf("\n");
+
+            //Calculating sell
+            try {
+                finish.await();
+            } catch (Exception e) {
+                System.err.println(e);
+            }
+            Collections.sort(P);
+            System.out.printf("\n");
+            for (int i = 0; i < 4; i++) {
+                P.get(i).report();
+            }
+
+            //Asking the user if they want another round
+            System.out.printf("\n\n");
+            System.out.printf("%s > Would you like to try again? (y/n): ", Thread.currentThread().getName());
+            Scanner in_again = new Scanner(System.in);
+            String again = in_again.next();
+            if (again.equalsIgnoreCase("y")) {
+                loop = true;
+                round++;
+                try {
+                    //This "try catch" is for restarting everything
+                    finish.reset();
+                    v1.join();
+                    v2.join();
+                    v3.join();
+                    Scanner input_v1 = new Scanner(new File(file_name_v1));
+                    Scanner input_v1x = new Scanner(new File(file_name_v1));
+                    v1 = new VendorThread("v1", P, input_v1, finish, input_v1x);
+
+                    Scanner input_v2 = new Scanner(new File(file_name_v2));
+                    Scanner input_v2x = new Scanner(new File(file_name_v2));
+                    v2 = new VendorThread("v2", P, input_v2, finish, input_v2x);
+
+                    Scanner input_v3 = new Scanner(new File(file_name_v3));
+                    Scanner input_v3x = new Scanner(new File(file_name_v3));
+                    v3 = new VendorThread("v3", P, input_v3, finish, input_v3x);
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+                for (int i = 0; i < 4; i++) {
+                    P.get(i).Reset(0);
+                }
+            } else {
+                loop = false;
+            }
+        }
+    }
+}
