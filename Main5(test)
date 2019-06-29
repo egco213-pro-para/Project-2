@@ -77,10 +77,13 @@ class Product extends Thread implements Comparable<Product>
 
 class VenderThread extends Thread {
     
+    private int round;
     private CyclicBarrier barrier;
     private int balance,transNum;
     private String thread_name, product_name;
     ArrayList<Product> allStock = new ArrayList<>();
+    
+    
     VenderThread (ArrayList<Product> vt,String tname,String pname,int b,int t)
             //ArrayList<Product> vt
     {
@@ -88,21 +91,60 @@ class VenderThread extends Thread {
         product_name = pname;
         allStock = vt;
         balance = b;
+        thread_name = tname;
+        transNum = t;
     }
-    @Override
-    public void run() {
-
-        //Start of buying
-        synchronized (allStock) {
-                    if (balance > 0) {
-                         for (int i = 0; i < 4; i++) {
-                            if (product_name.equals(allStock.get(i).getName().trim())) {
-                                allStock.get(i).addToStock(balance);
-                                System.out.printf("%s > transaction %-5d +%d %-30s balance = %d\n", Thread.currentThread().getName(), transNum, balance, product_name, allStock.get(i).getPrice());
-                            }
-                        }
-                    }
+    
+    public int getParties(){
+    
+        return round;
+    }
+    
+    /*public int await(){
+    
+        throws InterruptedException; 
         
+        BrokenBarrierException;
+    }*/
+    
+    @Override
+    public void run() 
+{
+        //buying
+        synchronized (allStock) 
+    {
+            if (balance > 0) 
+            {
+                for (int i = 0; i < 4; i++) 
+                {
+                    if (product_name.equals(allStock.get(i).getName().trim())) 
+                    {
+                        allStock.get(i).addToStock(balance);
+                        System.out.printf("%s > transaction %-5d +%d %-30s balance = %d\n", 
+                        Thread.currentThread().getName(), transNum, balance, product_name, allStock.get(i).getPrice()); 
+                    }        
+                }
+            }
+            
+            synchronized (allStock) 
+   {
+            if (balance < 0) 
+            {
+                for (int i = 0; i < 4; i++) 
+                {
+                    if (product_name.trim().equals(allStock.get(i).getName().trim())) 
+                    {
+                        allStock.get(i).removeFromStock(balance);
+                        System.out.printf("%s > transaction %-5d %d %-30s balance = %d\n",
+                        Thread.currentThread().getName(), transNum, balance, product_name, allStock.get(i).getPrice());
+                    }
+                }
+            }
+    } 
+            
+            
+            
+            
         try {
             barrier.await();
         } catch (Exception e) {
@@ -124,14 +166,12 @@ public class StockSimulator
         
         Thread VT = Thread.currentThread();
          
-        int numThread=4;
+        int numThread=3;
         CyclicBarrier barrier = new CyclicBarrier(numThread);
         
-        Thread v1 = null, v2 = null, v3 = null;
         ArrayList<Product> productList = new ArrayList<>();
-        ArrayList<Product> allItem = new ArrayList<>();
         // tranname, itemname, num
-
+        
         boolean correct_file = true;
         while (correct_file) 
         {
@@ -177,8 +217,10 @@ public class StockSimulator
                     String name_p1 = buffer[1];
                     int trans1 = Integer.parseInt(buffer[0].trim());
                     int price1 = Integer.parseInt(buffer[2].trim());
-                     v1 = new VenderThread(productList,"v1",name_p1,price1,trans1);
-
+                    System.out.printf(" v1 %s %d %d \n",name_p1,price1,trans1);
+                    
+                    Thread v1 = new VenderThread(productList,"v1",name_p1,price1,trans1);
+                   
                 }
             correct_file = false;
             } 
@@ -205,7 +247,11 @@ public class StockSimulator
                     String name_p2 = buffer[1];
                     int trans2 = Integer.parseInt(buffer[0].trim());
                     int price2 = Integer.parseInt(buffer[2].trim());
-                     v2 = new VenderThread(productList,"v2",name_p2,price2,trans2);
+                    
+                    System.out.printf(" v2 %s %d %d \n", name_p2,price2,trans2);
+                    
+                    Thread v2 = new VenderThread(productList,"v2",name_p2,price2,trans2);
+                    
                     
                 }
 
@@ -236,8 +282,8 @@ public class StockSimulator
                     int trans3 = Integer.parseInt(buffer[0].trim());
                     int price3 = Integer.parseInt(buffer[2].trim());
                     
-                    v3 = new VenderThread(productList,"v3",name_p3,price3,trans3);
-                    
+                    Thread v3 = new VenderThread(productList,"v3",name_p3,price3,trans3);
+                    v3.start();
                 }
                 
                 correct_file = false;
@@ -252,23 +298,28 @@ public class StockSimulator
         
         boolean loop =true;
         int round=1;
+        
         while (loop) {
             System.out.printf("\n%s > ------------------------\n", Thread.currentThread().getName());
             System.out.printf("%s > Stock Simulation Round %d\n", Thread.currentThread().getName(), round);
             System.out.printf("%s > ------------------------\n\n", Thread.currentThread().getName());
 
             //Calculating Buy
-            v1.start();
-            v2.start();
-            v3.start();
-
-            try {
+         
+            
+           
+            
+            /*try {
                 barrier.await();
             } catch (Exception e) {
                 System.err.println(e);
             }
-            Collections.sort(productList);
-            System.out.printf("\n");
+            
+            barrier.reset();
+            
+            Collections.sort(productList);*/
+            
+           /* System.out.printf("\n");
             for (int i = 0; i < 4; i++) {
                 productList.get(i).print();
             }
@@ -284,8 +335,9 @@ public class StockSimulator
             System.out.printf("\n");
             for (int i = 0; i < 4; i++) {
                 productList.get(i).print();
-            }
+            }*/
+           
+           loop=false;
     }
 }
 }
-
